@@ -10,6 +10,16 @@ repositories {
     mavenCentral()
 }
 
+wrapper {
+    distributionType = 'ALL'
+    doLast {
+        final URI sha256Uri = new URI(wrapper.getDistributionUrl() + ".sha256")
+        final String sha256Sum = new String(sha256Uri.toURL().bytes)
+        wrapper.getPropertiesFile() << "distributionSha256Sum=${sha256Sum}\n"
+        println "Added checksum to wrapper properties"
+    }
+}
+
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
