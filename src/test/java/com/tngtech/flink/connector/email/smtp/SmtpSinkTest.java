@@ -1,5 +1,8 @@
 package com.tngtech.flink.connector.email.smtp;
 
+import static org.apache.flink.table.api.Expressions.row;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.tngtech.flink.connector.email.testing.TestBase;
 import jakarta.mail.internet.MimeMessage;
@@ -7,9 +10,6 @@ import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.catalog.Column;
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.junit.Test;
-
-import static org.apache.flink.table.api.Expressions.row;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class SmtpSinkTest extends TestBase {
 
@@ -24,14 +24,13 @@ public class SmtpSinkTest extends TestBase {
 
         createSmtpSink("T", schema);
 
-        tEnv.fromValues(schema.toSinkRowDataType(),
-            row(
-                "Subject",
-                new String[] {"sender@tngtech.test"},
-                new String[] {"ingo@tngtech.test"},
-                "Message Content"
+        tEnv
+            .fromValues(
+                schema.toSinkRowDataType(),
+                row("Subject", new String[] { "sender@tngtech.test" }, new String[] { "ingo@tngtech.test" }, "Message Content")
             )
-        ).executeInsert("T").await();
+            .executeInsert("T")
+            .await();
 
         final MimeMessage[] sentMessages = greenMailRule.getReceivedMessages();
         assertThat(sentMessages).hasSize(1);

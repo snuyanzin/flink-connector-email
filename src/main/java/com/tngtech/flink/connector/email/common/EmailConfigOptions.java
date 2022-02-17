@@ -9,28 +9,15 @@ import org.apache.flink.configuration.ConfigOptions;
 @Internal
 public class EmailConfigOptions {
 
-    public static final ConfigOption<String> HOST = ConfigOptions.key("host")
-        .stringType()
-        .noDefaultValue();
+    public static final ConfigOption<String> HOST = ConfigOptions.key("host").stringType().noDefaultValue();
 
-    public static final ConfigOption<Long> PORT = ConfigOptions.key("port")
-        .longType()
-        .noDefaultValue();
+    public static final ConfigOption<Long> PORT = ConfigOptions.key("port").longType().noDefaultValue();
 
-    public static final ConfigOption<String> USER = ConfigOptions.key("user")
-        .stringType()
-        .noDefaultValue();
+    public static final ConfigOption<String> USER = ConfigOptions.key("user").stringType().noDefaultValue();
 
-    public static final ConfigOption<String> PASSWORD = ConfigOptions.key("password")
-        .stringType()
-        .noDefaultValue();
+    public static final ConfigOption<String> PASSWORD = ConfigOptions.key("password").stringType().noDefaultValue();
 
-    public static final ConfigOption<Boolean> SSL = ConfigOptions.key("ssl")
-        .booleanType()
-        .defaultValue(false);
+    public static final ConfigOption<Boolean> SSL = ConfigOptions.key("ssl").booleanType().defaultValue(false);
 
-    public static final ConfigOption<String> FORMAT = ConfigOptions.key("format")
-        .stringType()
-        .defaultValue("raw");
-
+    public static final ConfigOption<String> FORMAT = ConfigOptions.key("format").stringType().defaultValue("raw");
 }

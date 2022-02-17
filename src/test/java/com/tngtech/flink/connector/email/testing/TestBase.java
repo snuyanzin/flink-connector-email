@@ -1,11 +1,19 @@
 package com.tngtech.flink.connector.email.testing;
 
+import static org.apache.flink.table.utils.EncodingUtils.escapeIdentifier;
+import static org.apache.flink.table.utils.EncodingUtils.escapeSingleQuotes;
+import static org.awaitility.Awaitility.await;
+
 import com.icegreen.greenmail.configuration.GreenMailConfiguration;
 import com.icegreen.greenmail.junit4.GreenMailRule;
 import com.icegreen.greenmail.util.ServerSetup;
 import com.tngtech.flink.connector.email.imap.ReadableMetadata;
 import com.tngtech.flink.connector.email.smtp.WritableMetadata;
 import jakarta.mail.Session;
+import java.time.Duration;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.apache.flink.runtime.testutils.MiniClusterResourceConfiguration;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -23,15 +31,6 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
-import java.time.Duration;
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
-
-import static org.apache.flink.table.utils.EncodingUtils.escapeIdentifier;
-import static org.apache.flink.table.utils.EncodingUtils.escapeSingleQuotes;
-import static org.awaitility.Awaitility.await;
-
 public class TestBase {
 
     @ClassRule
@@ -45,9 +44,8 @@ public class TestBase {
     private static final Duration DEFAULT_DURATION = Duration.ofSeconds(10);
 
     @Rule
-    public final GreenMailRule greenMailRule =
-        new GreenMailRule(new ServerSetup[] {IMAP, IMAPS, SMTP})
-            .withConfiguration(getGreenmailConfiguration());
+    public final GreenMailRule greenMailRule = new GreenMailRule(new ServerSetup[] { IMAP, IMAPS, SMTP })
+        .withConfiguration(getGreenmailConfiguration());
 
     public Session session;
     public StreamExecutionEnvironment executionEnv;
@@ -66,10 +64,8 @@ public class TestBase {
 
     private static MiniClusterWithClientResource getCluster() {
         return new MiniClusterWithClientResource(
-            new MiniClusterResourceConfiguration.Builder()
-                .setNumberSlotsPerTaskManager(1)
-                .setNumberTaskManagers(1)
-                .build());
+            new MiniClusterResourceConfiguration.Builder().setNumberSlotsPerTaskManager(1).setNumberTaskManagers(1).build()
+        );
     }
 
     /**
@@ -97,9 +93,7 @@ public class TestBase {
      * further rows will not be collected. If fewer than expected rows are returned, it fails the
      * test.
      */
-    public List<Row> collect(TableResult tableResult, int expectedRows, Duration maxTime)
-        throws Exception {
-
+    public List<Row> collect(TableResult tableResult, int expectedRows, Duration maxTime) throws Exception {
         final List<Row> rows = new ArrayList<>();
         try (final CloseableIterator<Row> it = tableResult.collect()) {
             final Callable<Boolean> predicate = () -> rows.size() >= expectedRows;
@@ -115,8 +109,7 @@ public class TestBase {
         }
 
         if (rows.size() < expectedRows) {
-            Assert.fail(String.format("Expected %d rows, but only got %d before the timeout.",
-                expectedRows, rows.size()));
+            Assert.fail(String.format("Expected %d rows, but only got %d before the timeout.", expectedRows, rows.size()));
         }
 
         return rows;
@@ -135,25 +128,29 @@ public class TestBase {
         allOptions.put("port", String.valueOf(IMAP.getPort()));
         allOptions.putAll(options);
 
-        tEnv.executeSql(String.format("CREATE CATALOG %s WITH (%s)",
-                escapeIdentifier(name),
-                allOptions.entrySet().stream()
-                    .map(entry -> String.format("'%s' = '%s'",
-                        escapeSingleQuotes(entry.getKey()),
-                        escapeSingleQuotes(entry.getValue())))
-                    .collect(Collectors.joining(","))))
+        tEnv
+            .executeSql(
+                String.format(
+                    "CREATE CATALOG %s WITH (%s)",
+                    escapeIdentifier(name),
+                    allOptions
+                        .entrySet()
+                        .stream()
+                        .map(entry -> String.format("'%s' = '%s'", escapeSingleQuotes(entry.getKey()), escapeSingleQuotes(entry.getValue()))
+                        )
+                        .collect(Collectors.joining(","))
+                )
+            )
             .await();
 
-        return tEnv.getCatalog(name).orElseThrow(() -> new IllegalStateException(
-            String.format("Expected catalog '%s' to exist.", name)));
+        return tEnv.getCatalog(name).orElseThrow(() -> new IllegalStateException(String.format("Expected catalog '%s' to exist.", name)));
     }
 
     public Table createImapSource(String name, ResolvedSchema schema) throws Exception {
         return createImapSource(name, schema, Collections.emptyMap());
     }
 
-    public Table createImapSource(String name, ResolvedSchema schema, Map<String, String> options)
-        throws Exception {
+    public Table createImapSource(String name, ResolvedSchema schema, Map<String, String> options) throws Exception {
         Map<String, String> allOptions = new HashMap<>();
         allOptions.put("connector", "imap");
         allOptions.put("host", "localhost");
@@ -168,8 +165,7 @@ public class TestBase {
         createSmtpSink(name, schema, Collections.emptyMap());
     }
 
-    public void createSmtpSink(String name, ResolvedSchema schema, Map<String, String> options)
-        throws Exception {
+    public void createSmtpSink(String name, ResolvedSchema schema, Map<String, String> options) throws Exception {
         Map<String, String> allOptions = new HashMap<>();
         allOptions.put("connector", "smtp");
         allOptions.put("host", "localhost");
@@ -187,24 +183,29 @@ public class TestBase {
         return Column.metadata(metadata.getKey(), metadata.getType(), metadata.getKey(), false);
     }
 
-    private void createTable(String name, ResolvedSchema schema, Map<String, String> options)
-        throws Exception {
-        tEnv.executeSql(String.format("CREATE TEMPORARY TABLE %s %s WITH (%s)",
-                escapeIdentifier(name),
-                schema,
-                options.entrySet().stream()
-                    .map(entry -> String.format("'%s' = '%s'",
-                        escapeSingleQuotes(entry.getKey()),
-                        escapeSingleQuotes(entry.getValue())))
-                    .collect(Collectors.joining(","))))
+    private void createTable(String name, ResolvedSchema schema, Map<String, String> options) throws Exception {
+        tEnv
+            .executeSql(
+                String.format(
+                    "CREATE TEMPORARY TABLE %s %s WITH (%s)",
+                    escapeIdentifier(name),
+                    schema,
+                    options
+                        .entrySet()
+                        .stream()
+                        .map(entry -> String.format("'%s' = '%s'", escapeSingleQuotes(entry.getKey()), escapeSingleQuotes(entry.getValue()))
+                        )
+                        .collect(Collectors.joining(","))
+                )
+            )
             .await();
     }
 
     // ---------------------------------------------------------------------------------------------
 
-
     @RequiredArgsConstructor
     private static class CollectorThread extends Thread {
+
         private final CloseableIterator<Row> it;
         private final List<Row> rows;
         private final Callable<Boolean> breakCondition;
@@ -219,8 +220,7 @@ public class TestBase {
                         break;
                     }
                 }
-            } catch (Exception ignored) {
-            }
+            } catch (Exception ignored) {}
         }
     }
 }

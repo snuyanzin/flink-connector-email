@@ -1,9 +1,8 @@
 package com.tngtech.flink.connector.email.common;
 
+import java.util.Properties;
 import lombok.Getter;
 import org.apache.flink.annotation.Internal;
-
-import java.util.Properties;
 
 @Internal
 public class SessionProperties {

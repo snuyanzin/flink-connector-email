@@ -1,16 +1,15 @@
 package com.tngtech.flink.connector.email.imap;
 
+import static com.tngtech.flink.connector.email.imap.ImapConfigOptions.*;
+
+import java.util.HashSet;
+import java.util.Set;
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.table.catalog.Catalog;
 import org.apache.flink.table.factories.CatalogFactory;
 import org.apache.flink.table.factories.FactoryUtil;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import static com.tngtech.flink.connector.email.imap.ImapConfigOptions.*;
 
 @Internal
 public class ImapCatalogFactory implements CatalogFactory {
@@ -41,8 +40,7 @@ public class ImapCatalogFactory implements CatalogFactory {
 
     @Override
     public Catalog createCatalog(Context context) {
-        final FactoryUtil.CatalogFactoryHelper factoryHelper =
-            FactoryUtil.createCatalogFactoryHelper(this, context);
+        final FactoryUtil.CatalogFactoryHelper factoryHelper = FactoryUtil.createCatalogFactoryHelper(this, context);
         factoryHelper.validate();
 
         ReadableConfig options = factoryHelper.getOptions();

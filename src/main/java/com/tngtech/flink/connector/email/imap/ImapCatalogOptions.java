@@ -1,30 +1,31 @@
 package com.tngtech.flink.connector.email.imap;
 
+import static com.tngtech.flink.connector.email.imap.ImapConfigOptions.*;
+
 import com.tngtech.flink.connector.email.common.ConnectorOptions;
 import com.tngtech.flink.connector.email.common.Protocol;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.configuration.ReadableConfig;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
-import static com.tngtech.flink.connector.email.imap.ImapConfigOptions.*;
-
 @PublicEvolving
 @Data
 @SuperBuilder(toBuilder = true)
 @EqualsAndHashCode(callSuper = true)
 public class ImapCatalogOptions extends ConnectorOptions implements Serializable {
+
     private static final long serialVersionUID = 1L;
 
     // ---------------------------------------------------------------------------------------------
 
     public static ImapCatalogOptions fromOptions(ReadableConfig options) {
-        return ImapCatalogOptions.builder()
+        return ImapCatalogOptions
+            .builder()
             .host(options.get(HOST))
             .port(options.get(PORT))
             .user(options.get(USER))

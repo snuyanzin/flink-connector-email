@@ -1,19 +1,18 @@
 package com.tngtech.flink.connector.email.imap;
 
+import static com.tngtech.flink.connector.email.common.MessageUtil.*;
+
 import com.sun.mail.imap.IMAPFolder;
 import jakarta.mail.Flags;
 import jakarta.mail.Message;
 import jakarta.mail.Message.RecipientType;
+import java.io.Serializable;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.types.DataType;
-
-import java.io.Serializable;
-
-import static com.tngtech.flink.connector.email.common.MessageUtil.*;
 
 @PublicEvolving
 @RequiredArgsConstructor
@@ -28,7 +27,8 @@ public enum ReadableMetadata {
             public Object convert(Context context) throws Exception {
                 return context.getFolder().getUID(context.getMessage());
             }
-        }),
+        }
+    ),
 
     SUBJECT(
         "subject",
@@ -40,7 +40,8 @@ public enum ReadableMetadata {
             public Object convert(Context context) throws Exception {
                 return context.getMessage().getSubject();
             }
-        }),
+        }
+    ),
 
     SENT(
         "sent",
@@ -52,7 +53,8 @@ public enum ReadableMetadata {
             public Object convert(Context context) throws Exception {
                 return context.getMessage().getSentDate().toInstant();
             }
-        }),
+        }
+    ),
 
     RECEIVED(
         "received",
@@ -64,7 +66,8 @@ public enum ReadableMetadata {
             public Object convert(Context context) throws Exception {
                 return context.getMessage().getReceivedDate().toInstant();
             }
-        }),
+        }
+    ),
 
     CONTENT_TYPE(
         "contentType",
@@ -141,7 +144,8 @@ public enum ReadableMetadata {
             public Object convert(Context context) throws Exception {
                 return encodeAddresses(context.getMessage().getFrom());
             }
-        }),
+        }
+    ),
 
     FROM_FIRST(
         "fromFirst",
@@ -153,7 +157,8 @@ public enum ReadableMetadata {
             public Object convert(Context context) throws Exception {
                 return encodeFirstAddress(context.getMessage().getFrom());
             }
-        }),
+        }
+    ),
 
     TO(
         "to",
@@ -165,7 +170,8 @@ public enum ReadableMetadata {
             public Object convert(Context context) throws Exception {
                 return encodeAddresses(context.getMessage().getRecipients(RecipientType.TO));
             }
-        }),
+        }
+    ),
 
     TO_FIRST(
         "toFirst",
@@ -177,7 +183,8 @@ public enum ReadableMetadata {
             public Object convert(Context context) throws Exception {
                 return encodeFirstAddress(context.getMessage().getRecipients(RecipientType.TO));
             }
-        }),
+        }
+    ),
 
     CC(
         "cc",
@@ -189,7 +196,8 @@ public enum ReadableMetadata {
             public Object convert(Context context) throws Exception {
                 return encodeAddresses(context.getMessage().getRecipients(RecipientType.CC));
             }
-        }),
+        }
+    ),
 
     BCC(
         "bcc",
@@ -201,7 +209,8 @@ public enum ReadableMetadata {
             public Object convert(Context context) throws Exception {
                 return encodeAddresses(context.getMessage().getRecipients(RecipientType.BCC));
             }
-        }),
+        }
+    ),
 
     RECIPIENTS(
         "recipients",
@@ -213,7 +222,8 @@ public enum ReadableMetadata {
             public Object convert(Context context) throws Exception {
                 return encodeAddresses(context.getMessage().getAllRecipients());
             }
-        }),
+        }
+    ),
 
     REPLY_TO(
         "replyTo",
@@ -225,14 +235,12 @@ public enum ReadableMetadata {
             public Object convert(Context context) throws Exception {
                 return encodeAddresses(context.getMessage().getReplyTo());
             }
-        }),
+        }
+    ),
 
     HEADERS(
         "headers",
-        DataTypes.ARRAY(DataTypes.ROW(
-            DataTypes.FIELD("key", DataTypes.STRING()),
-            DataTypes.FIELD("value", DataTypes.STRING())
-        )).nullable(),
+        DataTypes.ARRAY(DataTypes.ROW(DataTypes.FIELD("key", DataTypes.STRING()), DataTypes.FIELD("value", DataTypes.STRING()))).nullable(),
         new Converter() {
             private static final long serialVersionUID = 1L;
 
@@ -240,7 +248,8 @@ public enum ReadableMetadata {
             public Object convert(Context context) throws Exception {
                 return encodeHeaders(context.getMessage().getAllHeaders());
             }
-        });
+        }
+    );
 
     @Getter
     private final String key;
@@ -263,7 +272,6 @@ public enum ReadableMetadata {
 
     // ---------------------------------------------------------------------------------------------
 
-
     public interface Context {
         IMAPFolder getFolder();
 
@@ -275,11 +283,11 @@ public enum ReadableMetadata {
 
         @Data
         class DefaultContext implements Context {
+
             private final IMAPFolder folder;
             private final Message message;
         }
     }
-
 
     @FunctionalInterface
     interface Converter extends Serializable {

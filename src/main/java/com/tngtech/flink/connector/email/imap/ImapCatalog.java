@@ -1,10 +1,14 @@
 package com.tngtech.flink.connector.email.imap;
 
+import static com.tngtech.flink.connector.email.imap.ImapConfigOptions.FOLDER;
+
 import com.tngtech.flink.connector.email.common.SessionProperties;
 import jakarta.mail.Folder;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
 import jakarta.mail.Store;
+import java.util.*;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.table.api.Schema;
@@ -14,11 +18,6 @@ import org.apache.flink.table.catalog.stats.CatalogColumnStatistics;
 import org.apache.flink.table.catalog.stats.CatalogTableStatistics;
 import org.apache.flink.table.expressions.Expression;
 import org.apache.flink.table.factories.Factory;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static com.tngtech.flink.connector.email.imap.ImapConfigOptions.FOLDER;
 
 @PublicEvolving
 @RequiredArgsConstructor
@@ -104,8 +103,7 @@ public class ImapCatalog implements Catalog {
     }
 
     @Override
-    public CatalogDatabase getDatabase(String databaseName)
-        throws DatabaseNotExistException, CatalogException {
+    public CatalogDatabase getDatabase(String databaseName) throws DatabaseNotExistException, CatalogException {
         if (!databaseExists(databaseName)) {
             throw new DatabaseNotExistException(name, databaseName);
         }
@@ -119,11 +117,8 @@ public class ImapCatalog implements Catalog {
     }
 
     @Override
-    public void createDatabase(
-        String databaseName,
-        CatalogDatabase database,
-        boolean ignoreIfExists
-    ) throws DatabaseAlreadyExistException, CatalogException {
+    public void createDatabase(String databaseName, CatalogDatabase database, boolean ignoreIfExists)
+        throws DatabaseAlreadyExistException, CatalogException {
         if (databaseExists(databaseName)) {
             if (ignoreIfExists) {
                 return;
@@ -136,11 +131,8 @@ public class ImapCatalog implements Catalog {
     }
 
     @Override
-    public void dropDatabase(
-        String databaseName,
-        boolean ignoreIfNotExists,
-        boolean cascade
-    ) throws DatabaseNotExistException, CatalogException {
+    public void dropDatabase(String databaseName, boolean ignoreIfNotExists, boolean cascade)
+        throws DatabaseNotExistException, CatalogException {
         if (!databaseExists(databaseName)) {
             if (ignoreIfNotExists) {
                 return;
@@ -153,11 +145,8 @@ public class ImapCatalog implements Catalog {
     }
 
     @Override
-    public void alterDatabase(
-        String databaseName,
-        CatalogDatabase newDatabase,
-        boolean ignoreIfNotExists
-    ) throws DatabaseNotExistException, CatalogException {
+    public void alterDatabase(String databaseName, CatalogDatabase newDatabase, boolean ignoreIfNotExists)
+        throws DatabaseNotExistException, CatalogException {
         if (!databaseExists(databaseName)) {
             if (ignoreIfNotExists) {
                 return;
@@ -170,24 +159,22 @@ public class ImapCatalog implements Catalog {
     }
 
     @Override
-    public List<String> listTables(
-        String databaseName
-    ) throws DatabaseNotExistException, CatalogException {
+    public List<String> listTables(String databaseName) throws DatabaseNotExistException, CatalogException {
         if (!databaseExists(databaseName)) {
             throw new DatabaseNotExistException(name, databaseName);
         }
 
         reconnect();
         try {
-            return Arrays.stream(store.getDefaultFolder().list("*"))
-                .filter(
-                    folder -> {
-                        try {
-                            return (folder.getType() & Folder.HOLDS_MESSAGES) != 0;
-                        } catch (MessagingException e) {
-                            throw new CatalogException(e.getMessage(), e);
-                        }
-                    })
+            return Arrays
+                .stream(store.getDefaultFolder().list("*"))
+                .filter(folder -> {
+                    try {
+                        return ((folder.getType() & Folder.HOLDS_MESSAGES) != 0);
+                    } catch (MessagingException e) {
+                        throw new CatalogException(e.getMessage(), e);
+                    }
+                })
                 .map(Folder::getFullName)
                 .collect(Collectors.toList());
         } catch (MessagingException e) {
@@ -196,23 +183,18 @@ public class ImapCatalog implements Catalog {
     }
 
     @Override
-    public List<String> listViews(
-        String databaseName
-    ) throws CatalogException {
+    public List<String> listViews(String databaseName) throws CatalogException {
         return Collections.emptyList();
     }
 
     @Override
-    public CatalogBaseTable getTable(
-        ObjectPath tablePath
-    ) throws TableNotExistException, CatalogException {
+    public CatalogBaseTable getTable(ObjectPath tablePath) throws TableNotExistException, CatalogException {
         if (!tableExists(tablePath)) {
             throw new TableNotExistException(name, tablePath);
         }
 
         Schema.Builder schemaBuilder = Schema.newBuilder();
-        DEFAULT_METADATA.forEach(
-            metadata -> schemaBuilder.columnByMetadata(metadata.getKey(), metadata.getType()));
+        DEFAULT_METADATA.forEach(metadata -> schemaBuilder.columnByMetadata(metadata.getKey(), metadata.getType()));
 
         final Map<String, String> sourceOptions = new HashMap<>(options.toOptions());
         sourceOptions.put(FOLDER.key(), tablePath.getObjectName());
@@ -231,10 +213,7 @@ public class ImapCatalog implements Catalog {
     }
 
     @Override
-    public void dropTable(
-        ObjectPath tablePath,
-        boolean ignoreIfNotExists
-    ) throws TableNotExistException, CatalogException {
+    public void dropTable(ObjectPath tablePath, boolean ignoreIfNotExists) throws TableNotExistException, CatalogException {
         if (!tableExists(tablePath)) {
             if (ignoreIfNotExists) {
                 return;
@@ -247,11 +226,8 @@ public class ImapCatalog implements Catalog {
     }
 
     @Override
-    public void renameTable(
-        ObjectPath tablePath,
-        String newTableName,
-        boolean ignoreIfNotExists
-    ) throws TableNotExistException, CatalogException {
+    public void renameTable(ObjectPath tablePath, String newTableName, boolean ignoreIfNotExists)
+        throws TableNotExistException, CatalogException {
         if (!tableExists(tablePath)) {
             if (ignoreIfNotExists) {
                 return;
@@ -269,11 +245,8 @@ public class ImapCatalog implements Catalog {
     }
 
     @Override
-    public void createTable(
-        ObjectPath tablePath,
-        CatalogBaseTable table,
-        boolean ignoreIfExists
-    ) throws TableAlreadyExistException, DatabaseNotExistException, CatalogException {
+    public void createTable(ObjectPath tablePath, CatalogBaseTable table, boolean ignoreIfExists)
+        throws TableAlreadyExistException, DatabaseNotExistException, CatalogException {
         if (!databaseExists(tablePath.getDatabaseName())) {
             throw new DatabaseNotExistException(name, tablePath.getDatabaseName());
         }
@@ -290,11 +263,8 @@ public class ImapCatalog implements Catalog {
     }
 
     @Override
-    public void alterTable(
-        ObjectPath tablePath,
-        CatalogBaseTable newTable,
-        boolean ignoreIfNotExists
-    ) throws TableNotExistException, CatalogException {
+    public void alterTable(ObjectPath tablePath, CatalogBaseTable newTable, boolean ignoreIfNotExists)
+        throws TableNotExistException, CatalogException {
         if (!tableExists(tablePath)) {
             if (ignoreIfNotExists) {
                 return;
@@ -307,40 +277,28 @@ public class ImapCatalog implements Catalog {
     }
 
     @Override
-    public List<CatalogPartitionSpec> listPartitions(
-        ObjectPath tablePath
-    ) throws CatalogException {
+    public List<CatalogPartitionSpec> listPartitions(ObjectPath tablePath) throws CatalogException {
         return Collections.emptyList();
     }
 
     @Override
-    public List<CatalogPartitionSpec> listPartitions(
-        ObjectPath tablePath,
-        CatalogPartitionSpec partitionSpec
-    ) throws CatalogException {
+    public List<CatalogPartitionSpec> listPartitions(ObjectPath tablePath, CatalogPartitionSpec partitionSpec) throws CatalogException {
         return Collections.emptyList();
     }
 
     @Override
-    public List<CatalogPartitionSpec> listPartitionsByFilter(
-        ObjectPath tablePath,
-        List<Expression> filters
-    ) throws CatalogException {
+    public List<CatalogPartitionSpec> listPartitionsByFilter(ObjectPath tablePath, List<Expression> filters) throws CatalogException {
         return Collections.emptyList();
     }
 
     @Override
     public CatalogPartition getPartition(ObjectPath tablePath, CatalogPartitionSpec partitionSpec)
         throws PartitionNotExistException, CatalogException {
-
         throw new PartitionNotExistException(name, tablePath, partitionSpec);
     }
 
     @Override
-    public boolean partitionExists(
-        ObjectPath tablePath,
-        CatalogPartitionSpec partitionSpec
-    ) throws CatalogException {
+    public boolean partitionExists(ObjectPath tablePath, CatalogPartitionSpec partitionSpec) throws CatalogException {
         return false;
     }
 
@@ -363,11 +321,8 @@ public class ImapCatalog implements Catalog {
     }
 
     @Override
-    public void dropPartition(
-        ObjectPath tablePath,
-        CatalogPartitionSpec partitionSpec,
-        boolean ignoreIfNotExists
-    ) throws PartitionNotExistException, CatalogException {
+    public void dropPartition(ObjectPath tablePath, CatalogPartitionSpec partitionSpec, boolean ignoreIfNotExists)
+        throws PartitionNotExistException, CatalogException {
         if (!partitionExists(tablePath, partitionSpec)) {
             if (ignoreIfNotExists) {
                 return;
@@ -398,16 +353,12 @@ public class ImapCatalog implements Catalog {
     }
 
     @Override
-    public List<String> listFunctions(
-        String dbName
-    ) throws DatabaseNotExistException, CatalogException {
+    public List<String> listFunctions(String dbName) throws DatabaseNotExistException, CatalogException {
         return Collections.emptyList();
     }
 
     @Override
-    public CatalogFunction getFunction(
-        ObjectPath functionPath
-    ) throws FunctionNotExistException, CatalogException {
+    public CatalogFunction getFunction(ObjectPath functionPath) throws FunctionNotExistException, CatalogException {
         throw new FunctionNotExistException(name, functionPath);
     }
 
@@ -417,11 +368,8 @@ public class ImapCatalog implements Catalog {
     }
 
     @Override
-    public void createFunction(
-        ObjectPath functionPath,
-        CatalogFunction function,
-        boolean ignoreIfExists
-    ) throws FunctionAlreadyExistException, DatabaseNotExistException, CatalogException {
+    public void createFunction(ObjectPath functionPath, CatalogFunction function, boolean ignoreIfExists)
+        throws FunctionAlreadyExistException, DatabaseNotExistException, CatalogException {
         if (functionExists(functionPath)) {
             if (ignoreIfExists) {
                 return;
@@ -434,11 +382,8 @@ public class ImapCatalog implements Catalog {
     }
 
     @Override
-    public void alterFunction(
-        ObjectPath functionPath,
-        CatalogFunction newFunction,
-        boolean ignoreIfNotExists
-    ) throws FunctionNotExistException, CatalogException {
+    public void alterFunction(ObjectPath functionPath, CatalogFunction newFunction, boolean ignoreIfNotExists)
+        throws FunctionNotExistException, CatalogException {
         if (!functionExists(functionPath)) {
             if (ignoreIfNotExists) {
                 return;
@@ -451,10 +396,7 @@ public class ImapCatalog implements Catalog {
     }
 
     @Override
-    public void dropFunction(
-        ObjectPath functionPath,
-        boolean ignoreIfNotExists
-    ) throws FunctionNotExistException, CatalogException {
+    public void dropFunction(ObjectPath functionPath, boolean ignoreIfNotExists) throws FunctionNotExistException, CatalogException {
         if (!functionExists(functionPath)) {
             if (ignoreIfNotExists) {
                 return;
@@ -467,9 +409,7 @@ public class ImapCatalog implements Catalog {
     }
 
     @Override
-    public CatalogTableStatistics getTableStatistics(
-        ObjectPath tablePath
-    ) throws TableNotExistException, CatalogException {
+    public CatalogTableStatistics getTableStatistics(ObjectPath tablePath) throws TableNotExistException, CatalogException {
         if (!tableExists(tablePath)) {
             throw new TableNotExistException(name, tablePath);
         }
@@ -478,9 +418,7 @@ public class ImapCatalog implements Catalog {
     }
 
     @Override
-    public CatalogColumnStatistics getTableColumnStatistics(
-        ObjectPath tablePath
-    ) throws TableNotExistException, CatalogException {
+    public CatalogColumnStatistics getTableColumnStatistics(ObjectPath tablePath) throws TableNotExistException, CatalogException {
         if (!tableExists(tablePath)) {
             throw new TableNotExistException(name, tablePath);
         }
@@ -489,10 +427,8 @@ public class ImapCatalog implements Catalog {
     }
 
     @Override
-    public CatalogTableStatistics getPartitionStatistics(
-        ObjectPath tablePath,
-        CatalogPartitionSpec partitionSpec
-    ) throws PartitionNotExistException, CatalogException {
+    public CatalogTableStatistics getPartitionStatistics(ObjectPath tablePath, CatalogPartitionSpec partitionSpec)
+        throws PartitionNotExistException, CatalogException {
         if (!partitionExists(tablePath, partitionSpec)) {
             throw new PartitionNotExistException(name, tablePath, partitionSpec);
         }
@@ -501,10 +437,8 @@ public class ImapCatalog implements Catalog {
     }
 
     @Override
-    public CatalogColumnStatistics getPartitionColumnStatistics(
-        ObjectPath tablePath,
-        CatalogPartitionSpec partitionSpec
-    ) throws PartitionNotExistException, CatalogException {
+    public CatalogColumnStatistics getPartitionColumnStatistics(ObjectPath tablePath, CatalogPartitionSpec partitionSpec)
+        throws PartitionNotExistException, CatalogException {
         if (!partitionExists(tablePath, partitionSpec)) {
             throw new PartitionNotExistException(name, tablePath, partitionSpec);
         }
@@ -513,11 +447,8 @@ public class ImapCatalog implements Catalog {
     }
 
     @Override
-    public void alterTableStatistics(
-        ObjectPath tablePath,
-        CatalogTableStatistics tableStatistics,
-        boolean ignoreIfNotExists
-    ) throws TableNotExistException, CatalogException {
+    public void alterTableStatistics(ObjectPath tablePath, CatalogTableStatistics tableStatistics, boolean ignoreIfNotExists)
+        throws TableNotExistException, CatalogException {
         if (!tableExists(tablePath)) {
             if (ignoreIfNotExists) {
                 return;
@@ -530,11 +461,8 @@ public class ImapCatalog implements Catalog {
     }
 
     @Override
-    public void alterTableColumnStatistics(
-        ObjectPath tablePath,
-        CatalogColumnStatistics columnStatistics,
-        boolean ignoreIfNotExists
-    ) throws TableNotExistException, CatalogException, TablePartitionedException {
+    public void alterTableColumnStatistics(ObjectPath tablePath, CatalogColumnStatistics columnStatistics, boolean ignoreIfNotExists)
+        throws TableNotExistException, CatalogException, TablePartitionedException {
         if (!tableExists(tablePath)) {
             if (ignoreIfNotExists) {
                 return;

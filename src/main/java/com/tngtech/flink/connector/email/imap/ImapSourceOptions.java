@@ -1,31 +1,33 @@
 package com.tngtech.flink.connector.email.imap;
 
+import static com.tngtech.flink.connector.email.imap.ImapConfigOptions.*;
+
 import com.tngtech.flink.connector.email.common.ConnectorOptions;
 import com.tngtech.flink.connector.email.common.Protocol;
+import java.io.Serializable;
+import java.time.Duration;
+import javax.annotation.Nullable;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.configuration.ReadableConfig;
 
-import javax.annotation.Nullable;
-import java.io.Serializable;
-import java.time.Duration;
-
-import static com.tngtech.flink.connector.email.imap.ImapConfigOptions.*;
-
 @PublicEvolving
 @Data
 @SuperBuilder(toBuilder = true)
 @EqualsAndHashCode(callSuper = true)
 public class ImapSourceOptions extends ConnectorOptions implements Serializable {
+
     private static final long serialVersionUID = 1L;
 
     private final String folder;
 
     private final StartupMode mode;
     private final int batchSize;
-    private final @Nullable Long offset;
+
+    @Nullable
+    private final Long offset;
 
     private final Duration connectionTimeout;
     private final Duration interval;
@@ -34,7 +36,8 @@ public class ImapSourceOptions extends ConnectorOptions implements Serializable 
     // ---------------------------------------------------------------------------------------------
 
     public static ImapSourceOptions fromOptions(ReadableConfig options) {
-        return ImapSourceOptions.builder()
+        return ImapSourceOptions
+            .builder()
             .host(options.get(HOST))
             .port(options.get(PORT))
             .user(options.get(USER))
@@ -49,5 +52,4 @@ public class ImapSourceOptions extends ConnectorOptions implements Serializable 
             .heartbeatInterval(options.get(HEARTBEAT_INTERVAL))
             .build();
     }
-
 }

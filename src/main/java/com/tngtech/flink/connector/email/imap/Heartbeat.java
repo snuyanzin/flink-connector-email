@@ -2,9 +2,8 @@ package com.tngtech.flink.connector.email.imap;
 
 import com.sun.mail.imap.IMAPFolder;
 import jakarta.mail.MessagingException;
-import org.apache.flink.annotation.Internal;
-
 import java.time.Duration;
+import org.apache.flink.annotation.Internal;
 
 /**
  * The IMAP IDLE protocol doesn't actually idle forever, servers might eventually stop sending
@@ -14,12 +13,12 @@ import java.time.Duration;
  */
 @Internal
 class Heartbeat extends Thread {
+
     private final IMAPFolder folder;
     private final Duration heartbeatInterval;
 
     public Heartbeat(IMAPFolder folder, Duration heartbeatInterval) {
         super("IMAP Idle Heartbeat");
-
         this.folder = folder;
         this.heartbeatInterval = heartbeatInterval;
     }
@@ -30,11 +29,10 @@ class Heartbeat extends Thread {
             try {
                 Thread.sleep(heartbeatInterval.toMillis());
 
-                folder.doCommand(
-                    protocol -> {
-                        protocol.simpleCommand("NOOP", null);
-                        return null;
-                    });
+                folder.doCommand(protocol -> {
+                    protocol.simpleCommand("NOOP", null);
+                    return null;
+                });
             } catch (InterruptedException | MessagingException ignored) {
                 // We want this thread to just stop
             }

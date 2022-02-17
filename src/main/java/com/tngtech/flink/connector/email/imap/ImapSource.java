@@ -7,6 +7,10 @@ import com.tngtech.flink.connector.email.imap.ReadableMetadata.Context;
 import jakarta.mail.*;
 import jakarta.mail.event.MessageCountAdapter;
 import jakarta.mail.event.MessageCountEvent;
+import java.time.Instant;
+import java.util.List;
+import java.util.Properties;
+import javax.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.IOUtils;
 import org.apache.flink.annotation.PublicEvolving;
@@ -22,16 +26,13 @@ import org.apache.flink.table.data.utils.JoinedRowData;
 import org.apache.flink.types.RowKind;
 import org.apache.flink.util.UserCodeClassLoader;
 
-import javax.annotation.Nullable;
-import java.time.Instant;
-import java.util.List;
-import java.util.Properties;
-
 @PublicEvolving
 @RequiredArgsConstructor
 public class ImapSource extends RichSourceFunction<RowData> {
 
-    private final @Nullable DeserializationSchema<RowData> contentDeserializer;
+    @Nullable
+    private final DeserializationSchema<RowData> contentDeserializer;
+
     private final ImapSourceOptions options;
     private final List<ReadableMetadata> metadataKeys;
 
@@ -50,17 +51,19 @@ public class ImapSource extends RichSourceFunction<RowData> {
         connect();
 
         if (contentDeserializer != null) {
-            contentDeserializer.open(new DeserializationSchema.InitializationContext() {
-                @Override
-                public MetricGroup getMetricGroup() {
-                    return getRuntimeContext().getMetricGroup();
-                }
+            contentDeserializer.open(
+                new DeserializationSchema.InitializationContext() {
+                    @Override
+                    public MetricGroup getMetricGroup() {
+                        return getRuntimeContext().getMetricGroup();
+                    }
 
-                @Override
-                public UserCodeClassLoader getUserCodeClassLoader() {
-                    return (UserCodeClassLoader) Thread.currentThread().getContextClassLoader();
+                    @Override
+                    public UserCodeClassLoader getUserCodeClassLoader() {
+                        return (UserCodeClassLoader) Thread.currentThread().getContextClassLoader();
+                    }
                 }
-            });
+            );
         }
     }
 
@@ -74,8 +77,7 @@ public class ImapSource extends RichSourceFunction<RowData> {
             if (store != null) {
                 store.close();
             }
-        } catch (MessagingException ignored) {
-        }
+        } catch (MessagingException ignored) {}
     }
 
     @Override
@@ -84,12 +86,14 @@ public class ImapSource extends RichSourceFunction<RowData> {
 
         final boolean readNewMessages = options.getMode().isOneOf(StartupMode.NEW, StartupMode.ALL);
         if (readNewMessages) {
-            folder.addMessageCountListener(new MessageCountAdapter() {
-                @Override
-                public void messagesAdded(MessageCountEvent event) {
-                    collectMessages(ctx, event.getMessages());
+            folder.addMessageCountListener(
+                new MessageCountAdapter() {
+                    @Override
+                    public void messagesAdded(MessageCountEvent event) {
+                        collectMessages(ctx, event.getMessages());
+                    }
                 }
-            });
+            );
         }
 
         if (options.getMode().isOneOf(StartupMode.CURRENT, StartupMode.ALL)) {
@@ -136,8 +140,7 @@ public class ImapSource extends RichSourceFunction<RowData> {
         } catch (MessagingException e) {
             throw ImapSourceException.propagate(e);
         } catch (ClassCastException e) {
-            throw new ImapSourceException(
-                "Folder " + folder.getName() + " is not an " + IMAPFolder.class.getSimpleName(), e);
+            throw new ImapSourceException("Folder " + folder.getName() + " is not an " + IMAPFolder.class.getSimpleName(), e);
         }
 
         openFolder();
@@ -186,9 +189,11 @@ public class ImapSource extends RichSourceFunction<RowData> {
             fetchProfile.add(FetchProfile.Item.SIZE);
         }
 
-        if (metadataKeys.contains(ReadableMetadata.SEEN)
-            || metadataKeys.contains(ReadableMetadata.DRAFT)
-            || metadataKeys.contains(ReadableMetadata.ANSWERED)) {
+        if (
+            metadataKeys.contains(ReadableMetadata.SEEN) ||
+            metadataKeys.contains(ReadableMetadata.DRAFT) ||
+            metadataKeys.contains(ReadableMetadata.ANSWERED)
+        ) {
             fetchProfile.add(FetchProfile.Item.FLAGS);
         }
 
@@ -242,14 +247,14 @@ public class ImapSource extends RichSourceFunction<RowData> {
         final Thread fetchThread = new Thread(() -> {
             long batchStartUID = options.getOffset() == null ? 1 : options.getOffset();
             while (running) {
-                final long batchEndUID =
-                    Math.min(batchStartUID + options.getBatchSize() - 1, endUID);
+                final long batchEndUID = Math.min(batchStartUID + options.getBatchSize() - 1, endUID);
                 try {
                     collectMessages(ctx, folder.getMessagesByUID(batchStartUID, batchEndUID));
                 } catch (MessagingException e) {
-                    throw new ImapSourceException(String.format(
-                        "Error while fetching messages (batchStartUID = %d, batchEndUid = %d",
-                        batchStartUID, batchEndUID), e);
+                    throw new ImapSourceException(
+                        String.format("Error while fetching messages (batchStartUID = %d, batchEndUid = %d", batchStartUID, batchEndUID),
+                        e
+                    );
                 }
 
                 batchStartUID = batchEndUID + 1;
@@ -304,9 +309,7 @@ public class ImapSource extends RichSourceFunction<RowData> {
             final byte[] content = IOUtils.toByteArray(message.getInputStream());
             final RowData deserializedRow = contentDeserializer.deserialize(content);
 
-            final RowData physicalRow = deserializedRow == null
-                ? GenericRowData.of(RowKind.INSERT, null)
-                : deserializedRow;
+            final RowData physicalRow = deserializedRow == null ? GenericRowData.of(RowKind.INSERT, null) : deserializedRow;
 
             outputRow = new JoinedRowData(physicalRow, metadataRow);
         } else {
@@ -340,8 +343,7 @@ public class ImapSource extends RichSourceFunction<RowData> {
     private static Properties getImapProperties(ImapSourceOptions options) {
         final SessionProperties sessionProperties = new SessionProperties(options);
 
-        sessionProperties.addProtocolProperty("connectiontimeout",
-            String.valueOf(options.getConnectionTimeout().toMillis()));
+        sessionProperties.addProtocolProperty("connectiontimeout", String.valueOf(options.getConnectionTimeout().toMillis()));
         sessionProperties.addProtocolProperty("partialfetch", "false");
         sessionProperties.addProtocolProperty("peek", "true");
 

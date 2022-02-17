@@ -1,6 +1,13 @@
 package com.tngtech.flink.connector.email.imap;
 
+import static org.apache.flink.util.Preconditions.checkNotNull;
+
 import com.tngtech.flink.connector.email.imap.ImapConfigOptions.StartupMode;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.table.connector.ChangelogMode;
@@ -14,27 +21,15 @@ import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.table.types.utils.DataTypeUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import static org.apache.flink.util.Preconditions.checkNotNull;
-
 @Internal
-class ImapTableSource implements ScanTableSource, SupportsReadingMetadata,
-    SupportsProjectionPushDown {
+class ImapTableSource implements ScanTableSource, SupportsReadingMetadata, SupportsProjectionPushDown {
 
     private DataType rowType;
     private final DecodingFormat<DeserializationSchema<RowData>> decodingFormat;
     private final ImapSourceOptions options;
     private List<ReadableMetadata> metadataKeys = new ArrayList<>();
 
-    public ImapTableSource(DataType rowType,
-        DecodingFormat<DeserializationSchema<RowData>> decodingFormat,
-        ImapSourceOptions options) {
-
+    public ImapTableSource(DataType rowType, DecodingFormat<DeserializationSchema<RowData>> decodingFormat, ImapSourceOptions options) {
         this.rowType = checkNotNull(rowType);
         this.decodingFormat = decodingFormat;
         this.options = options;
@@ -51,9 +46,7 @@ class ImapTableSource implements ScanTableSource, SupportsReadingMetadata,
         // need to deserialize anything.
         final boolean readsContent = !rowType.getChildren().isEmpty();
 
-        final DeserializationSchema<RowData> deserializer = readsContent
-            ? decodingFormat.createRuntimeDecoder(context, rowType)
-            : null;
+        final DeserializationSchema<RowData> deserializer = readsContent ? decodingFormat.createRuntimeDecoder(context, rowType) : null;
 
         final ImapSource source = new ImapSource(deserializer, options, metadataKeys);
         final boolean bounded = options.getMode() == StartupMode.CURRENT;
@@ -76,7 +69,6 @@ class ImapTableSource implements ScanTableSource, SupportsReadingMetadata,
     // Abilities
     // ---------------------------------------------------------------------------------------------
 
-
     @Override
     public boolean supportsNestedProjection() {
         return false;
@@ -89,14 +81,11 @@ class ImapTableSource implements ScanTableSource, SupportsReadingMetadata,
 
     @Override
     public Map<String, DataType> listReadableMetadata() {
-        return Arrays.stream(ReadableMetadata.values())
-            .collect(Collectors.toMap(ReadableMetadata::getKey, ReadableMetadata::getType));
+        return Arrays.stream(ReadableMetadata.values()).collect(Collectors.toMap(ReadableMetadata::getKey, ReadableMetadata::getType));
     }
 
     @Override
     public void applyReadableMetadata(List<String> metadataKeys, DataType producedDataType) {
-        this.metadataKeys = metadataKeys.stream()
-            .map(ReadableMetadata::ofKey)
-            .collect(Collectors.toList());
+        this.metadataKeys = metadataKeys.stream().map(ReadableMetadata::ofKey).collect(Collectors.toList());
     }
 }

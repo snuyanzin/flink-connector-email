@@ -1,20 +1,19 @@
 package com.tngtech.flink.connector.email.imap;
 
+import static com.icegreen.greenmail.util.GreenMailUtil.sendTextEmail;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.icegreen.greenmail.configuration.GreenMailConfiguration;
 import com.tngtech.flink.connector.email.testing.TestBase;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.catalog.Column;
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.types.Row;
 import org.junit.Test;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static com.icegreen.greenmail.util.GreenMailUtil.sendTextEmail;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class ImapSourceTest extends TestBase {
 
@@ -34,8 +33,7 @@ public class ImapSourceTest extends TestBase {
             Column.physical("content", DataTypes.STRING())
         );
 
-        sendTextEmail("ingo@tngtech.test", "sender@tngtech.test", "Subject", "Message Content",
-            SMTP);
+        sendTextEmail("ingo@tngtech.test", "sender@tngtech.test", "Subject", "Message Content", SMTP);
 
         final List<Row> rows = collect(createImapSource("T", schema, getLogin()).execute(), 1);
 

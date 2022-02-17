@@ -16,5 +16,4 @@ public final class SmtpSinkException extends RuntimeException {
     public static SmtpSinkException propagate(Exception e) {
         throw new SmtpSinkException(e.getMessage(), e);
     }
-
 }

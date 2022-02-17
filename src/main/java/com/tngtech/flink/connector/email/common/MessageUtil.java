@@ -5,15 +5,14 @@ import jakarta.mail.Address;
 import jakarta.mail.Header;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
-import lombok.experimental.UtilityClass;
-import org.apache.flink.annotation.Internal;
-import org.apache.flink.table.data.*;
-
-import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.stream.IntStream;
+import javax.annotation.Nullable;
+import lombok.experimental.UtilityClass;
+import org.apache.flink.annotation.Internal;
+import org.apache.flink.table.data.*;
 
 @UtilityClass
 @Internal
@@ -24,7 +23,8 @@ public class MessageUtil {
             return null;
         }
 
-        final StringData[] mappedItems = Arrays.stream(items)
+        final StringData[] mappedItems = Arrays
+            .stream(items)
             .map(MessageUtil::encodeAddress)
             .map(StringData::fromString)
             .toArray(StringData[]::new);
@@ -49,7 +49,8 @@ public class MessageUtil {
             return null;
         }
 
-        return IntStream.range(0, addressesData.size())
+        return IntStream
+            .range(0, addressesData.size())
             .mapToObj(addressesData::getString)
             .map(StringData::toString)
             .map(MessageUtil::decodeAddress)
@@ -71,18 +72,12 @@ public class MessageUtil {
     // ---------------------------------------------------------------------------------------------
 
     public static ArrayData encodeHeaders(Enumeration<Header> headers) {
-        final RowData[] headerRows = Collections.list(headers).stream()
-            .map(MessageUtil::encodeHeader)
-            .toArray(RowData[]::new);
+        final RowData[] headerRows = Collections.list(headers).stream().map(MessageUtil::encodeHeader).toArray(RowData[]::new);
 
         return new GenericArrayData(headerRows);
     }
 
     public static RowData encodeHeader(Header header) {
-        return GenericRowData.of(
-            StringData.fromString(header.getName()),
-            StringData.fromString(header.getValue())
-        );
+        return GenericRowData.of(StringData.fromString(header.getName()), StringData.fromString(header.getValue()));
     }
-
 }

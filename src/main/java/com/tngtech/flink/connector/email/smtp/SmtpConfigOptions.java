@@ -20,5 +20,4 @@ public class SmtpConfigOptions {
     public static final ConfigOption<Boolean> SSL = EmailConfigOptions.SSL;
 
     public static final ConfigOption<String> FORMAT = EmailConfigOptions.FORMAT;
-
 }

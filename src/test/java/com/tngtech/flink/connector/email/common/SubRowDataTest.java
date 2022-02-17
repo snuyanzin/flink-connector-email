@@ -1,13 +1,14 @@
 package com.tngtech.flink.connector.email.common;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.apache.flink.table.data.GenericRowData;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.data.StringData;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class SubRowDataTest {
+
     @Test
     public void test() {
         final RowData row = GenericRowData.of(
@@ -15,7 +16,8 @@ public class SubRowDataTest {
             StringData.fromString("b"),
             StringData.fromString("c"),
             StringData.fromString("d"),
-            StringData.fromString("e"));
+            StringData.fromString("e")
+        );
 
         final RowData subRow1 = new SubRowData(row, 0, 2);
         assertThat(subRow1.getArity()).isEqualTo(2);

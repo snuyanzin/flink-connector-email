@@ -1,5 +1,9 @@
 package com.tngtech.flink.connector.email.smtp;
 
+import static com.tngtech.flink.connector.email.smtp.SmtpConfigOptions.*;
+
+import java.util.HashSet;
+import java.util.Set;
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.serialization.SerializationSchema;
 import org.apache.flink.configuration.ConfigOption;
@@ -10,11 +14,6 @@ import org.apache.flink.table.factories.DynamicTableSinkFactory;
 import org.apache.flink.table.factories.FactoryUtil;
 import org.apache.flink.table.factories.SerializationFormatFactory;
 import org.apache.flink.table.types.DataType;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import static com.tngtech.flink.connector.email.smtp.SmtpConfigOptions.*;
 
 @Internal
 public class SmtpSinkFactory implements DynamicTableSinkFactory {
@@ -48,16 +47,16 @@ public class SmtpSinkFactory implements DynamicTableSinkFactory {
 
     @Override
     public DynamicTableSink createDynamicTableSink(Context context) {
-        final FactoryUtil.TableFactoryHelper
-            factoryHelper = FactoryUtil.createTableFactoryHelper(this, context);
+        final FactoryUtil.TableFactoryHelper factoryHelper = FactoryUtil.createTableFactoryHelper(this, context);
 
-        final EncodingFormat<SerializationSchema<RowData>> encodingFormat =
-            factoryHelper.discoverEncodingFormat(SerializationFormatFactory.class, FORMAT);
+        final EncodingFormat<SerializationSchema<RowData>> encodingFormat = factoryHelper.discoverEncodingFormat(
+            SerializationFormatFactory.class,
+            FORMAT
+        );
 
         factoryHelper.validate();
 
-        final DataType rowType =
-            context.getCatalogTable().getResolvedSchema().toPhysicalRowDataType();
+        final DataType rowType = context.getCatalogTable().getResolvedSchema().toPhysicalRowDataType();
 
         final SmtpSinkOptions options = SmtpSinkOptions.fromOptions(factoryHelper.getOptions());
 

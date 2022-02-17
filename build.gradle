@@ -16,8 +16,8 @@ java {
 }
 
 dependencies {
-    testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.2"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.2"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.2"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.2"
 }
 
 spotless {
@@ -26,11 +26,12 @@ spotless {
         removeUnusedImports()
 
         prettier([
-                "prettier"            : "2.0.5",
-                "prettier-plugin-java": "0.8.0"
+                "prettier"            : "2.3.1",
+                "prettier-plugin-java": "1.6.1"
         ]).config([
                 "parser"  : "java",
-                "tabWidth": 4
+                "tabWidth": 4,
+                "printWidth": 140
         ])
     }
 }
@@ -61,16 +62,16 @@ clean.doFirst {
 }
 
 ext {
-    flink = "1.13.1"
-    lombok = "1.18.20"
-    greenmail = "2.0.0-alpha-1"
+    flink = "1.14.3"
+    lombok = "1.18.22"
+    greenmail = "2.0.0-alpha-2"
 }
 
 dependencies {
     compileOnly "org.apache.flink:flink-table-common:${flink}"
     compileOnly "org.apache.flink:flink-table-api-java-bridge_2.12:${flink}"
 
-    extraLibs "com.squareup.okhttp3:okhttp:4.9.1"
+    extraLibs "com.squareup.okhttp3:okhttp:4.9.3"
     extraLibs "com.sun.mail:jakarta.mail:2.0.1"
 
     // Lombok
@@ -81,16 +82,16 @@ dependencies {
 
     // Testing
 
-    testImplementation "org.apache.flink:flink-table-planner-blink_2.12:${flink}"
+    testImplementation "org.apache.flink:flink-table-planner_2.12:${flink}"
     testImplementation "org.apache.flink:flink-streaming-scala_2.12:${flink}"
     testImplementation "org.apache.flink:flink-test-utils_2.12:${flink}"
     testImplementation "com.icegreen:greenmail-junit4:${greenmail}"
-    testImplementation "org.awaitility:awaitility-groovy:4.1.0"
+    testImplementation "org.awaitility:awaitility-groovy:4.1.1"
     testImplementation "com.tngtech.junit.dataprovider:junit4-dataprovider:2.8"
-    testImplementation 'org.assertj:assertj-core:3.20.2'
-    testImplementation 'com.tngtech.archunit:archunit-junit4:0.20.1'
+    testImplementation 'org.assertj:assertj-core:3.22.0'
+    testImplementation 'com.tngtech.archunit:archunit-junit4:0.22.0'
 
     //
 
-    configurations.compile.extendsFrom(configurations.extraLibs)
+    configurations.compileOnly.extendsFrom(configurations.extraLibs)
 }

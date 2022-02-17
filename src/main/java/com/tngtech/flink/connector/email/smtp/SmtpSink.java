@@ -10,6 +10,9 @@ import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
 import jakarta.mail.util.ByteArrayDataSource;
+import java.util.List;
+import java.util.Properties;
+import javax.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.api.common.serialization.SerializationSchema;
@@ -20,16 +23,15 @@ import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.util.UserCodeClassLoader;
 
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Properties;
-
 @PublicEvolving
 @RequiredArgsConstructor
 public class SmtpSink extends RichSinkFunction<RowData> {
 
     private final DataType physicalRowType;
-    private final @Nullable SerializationSchema<RowData> contentSerializer;
+
+    @Nullable
+    private final SerializationSchema<RowData> contentSerializer;
+
     private final SmtpSinkOptions options;
     private final List<WritableMetadata> metadataKeys;
 
@@ -41,17 +43,19 @@ public class SmtpSink extends RichSinkFunction<RowData> {
         connect();
 
         if (contentSerializer != null) {
-            contentSerializer.open(new SerializationSchema.InitializationContext() {
-                @Override
-                public MetricGroup getMetricGroup() {
-                    return getRuntimeContext().getMetricGroup();
-                }
+            contentSerializer.open(
+                new SerializationSchema.InitializationContext() {
+                    @Override
+                    public MetricGroup getMetricGroup() {
+                        return getRuntimeContext().getMetricGroup();
+                    }
 
-                @Override
-                public UserCodeClassLoader getUserCodeClassLoader() {
-                    return (UserCodeClassLoader) Thread.currentThread().getContextClassLoader();
+                    @Override
+                    public UserCodeClassLoader getUserCodeClassLoader() {
+                        return (UserCodeClassLoader) Thread.currentThread().getContextClassLoader();
+                    }
                 }
-            });
+            );
         }
     }
 

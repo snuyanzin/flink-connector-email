@@ -1,5 +1,10 @@
 package com.tngtech.flink.connector.email.smtp;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.serialization.SerializationSchema;
@@ -10,12 +15,6 @@ import org.apache.flink.table.connector.sink.SinkFunctionProvider;
 import org.apache.flink.table.connector.sink.abilities.SupportsWritingMetadata;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.DataType;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Internal
 @RequiredArgsConstructor
@@ -37,9 +36,7 @@ class SmtpTableSink implements DynamicTableSink, SupportsWritingMetadata {
         // need to serialize anything.
         final boolean writesContent = !rowType.getChildren().isEmpty();
 
-        final SerializationSchema<RowData> serializer = writesContent
-            ? encodingFormat.createRuntimeEncoder(context, rowType)
-            : null;
+        final SerializationSchema<RowData> serializer = writesContent ? encodingFormat.createRuntimeEncoder(context, rowType) : null;
 
         final SmtpSink sink = new SmtpSink(rowType, serializer, options, metadataKeys);
         return SinkFunctionProvider.of(sink);
@@ -63,14 +60,11 @@ class SmtpTableSink implements DynamicTableSink, SupportsWritingMetadata {
 
     @Override
     public Map<String, DataType> listWritableMetadata() {
-        return Arrays.stream(WritableMetadata.values())
-            .collect(Collectors.toMap(WritableMetadata::getKey, WritableMetadata::getType));
+        return Arrays.stream(WritableMetadata.values()).collect(Collectors.toMap(WritableMetadata::getKey, WritableMetadata::getType));
     }
 
     @Override
     public void applyWritableMetadata(List<String> metadataKeys, DataType consumedDataType) {
-        metadataKeys.stream()
-            .map(WritableMetadata::ofKey)
-            .forEach(this.metadataKeys::add);
+        metadataKeys.stream().map(WritableMetadata::ofKey).forEach(this.metadataKeys::add);
     }
 }

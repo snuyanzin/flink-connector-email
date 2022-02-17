@@ -1,18 +1,17 @@
 package com.tngtech.flink.connector.email.smtp;
 
+import static com.tngtech.flink.connector.email.common.MessageUtil.decodeAddresses;
+
 import jakarta.mail.Address;
 import jakarta.mail.Message.RecipientType;
 import jakarta.mail.internet.MimeMessage;
+import java.io.Serializable;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.DataType;
-
-import java.io.Serializable;
-
-import static com.tngtech.flink.connector.email.common.MessageUtil.decodeAddresses;
 
 @PublicEvolving
 @RequiredArgsConstructor
@@ -121,7 +120,6 @@ public enum WritableMetadata {
     }
 
     // ---------------------------------------------------------------------------------------------
-
 
     @FunctionalInterface
     interface Converter extends Serializable {
