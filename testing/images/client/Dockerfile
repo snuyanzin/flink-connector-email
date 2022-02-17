@@ -1,5 +1,5 @@
-FROM flink:1.13.2-scala_2.12
-ARG FLINK_VERSION=1.13.2
+FROM flink:1.14.3-scala_2.12
+ARG FLINK_VERSION=1.14.3
 
 COPY sql-client/ /opt/sql-client
 
