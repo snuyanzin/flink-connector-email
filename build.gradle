@@ -26,8 +26,8 @@ java {
 }
 
 dependencies {
-    testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.2"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.2"
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.1'
 }
 
 spotless {
@@ -72,16 +72,16 @@ clean.doFirst {
 }
 
 ext {
-    flink = "1.14.3"
-    lombok = "1.18.22"
+    flink = "1.15.2"
+    lombok = "1.18.24"
     greenmail = "2.0.0-alpha-2"
 }
 
 dependencies {
     compileOnly "org.apache.flink:flink-table-common:${flink}"
-    compileOnly "org.apache.flink:flink-table-api-java-bridge_2.12:${flink}"
+    compileOnly "org.apache.flink:flink-table-api-java-bridge:${flink}"
 
-    extraLibs "com.squareup.okhttp3:okhttp:4.9.3"
+    extraLibs "com.squareup.okhttp3:okhttp:4.10.0"
     extraLibs "com.sun.mail:jakarta.mail:2.0.1"
 
     // Lombok
@@ -94,7 +94,7 @@ dependencies {
 
     testImplementation "org.apache.flink:flink-table-planner_2.12:${flink}"
     testImplementation "org.apache.flink:flink-streaming-scala_2.12:${flink}"
-    testImplementation "org.apache.flink:flink-test-utils_2.12:${flink}"
+    testImplementation "org.apache.flink:flink-test-utils:${flink}"
     testImplementation "com.icegreen:greenmail-junit4:${greenmail}"
     testImplementation "org.awaitility:awaitility-groovy:4.1.1"
     testImplementation "com.tngtech.junit.dataprovider:junit4-dataprovider:2.8"
