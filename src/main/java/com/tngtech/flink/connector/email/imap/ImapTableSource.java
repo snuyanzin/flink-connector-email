@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.table.connector.ChangelogMode;
+import org.apache.flink.table.connector.Projection;
 import org.apache.flink.table.connector.format.DecodingFormat;
 import org.apache.flink.table.connector.source.DynamicTableSource;
 import org.apache.flink.table.connector.source.ScanTableSource;
@@ -19,7 +20,6 @@ import org.apache.flink.table.connector.source.abilities.SupportsProjectionPushD
 import org.apache.flink.table.connector.source.abilities.SupportsReadingMetadata;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.DataType;
-import org.apache.flink.table.types.utils.DataTypeUtils;
 
 @Internal
 class ImapTableSource implements ScanTableSource, SupportsReadingMetadata, SupportsProjectionPushDown {
@@ -75,8 +75,8 @@ class ImapTableSource implements ScanTableSource, SupportsReadingMetadata, Suppo
     }
 
     @Override
-    public void applyProjection(int[][] projectedFields) {
-        rowType = DataTypeUtils.projectRow(rowType, projectedFields);
+    public void applyProjection(int[][] projectedFields, DataType producedDataType) {
+        rowType = Projection.of(projectedFields).project(producedDataType);
     }
 
     @Override

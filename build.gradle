@@ -72,7 +72,7 @@ clean.doFirst {
 }
 
 ext {
-    flink = "1.15.2"
+    flink = "1.16.0"
     lombok = "1.18.24"
     greenmail = "2.0.0-alpha-2"
 }
